@@ -4,9 +4,8 @@ using UnityEngine.Networking;
 
 public class GeminiClient : MonoBehaviour
 {
-    [Header("API Config")]
     [SerializeField]
-    private string apiKey = "YOUR_GEMINI_KEY_HERE";
+    private string apiKey = "AIzaSyDaAliL5I50g6iCxsqvPGSF_e7awRrvDoA";
 
     private const string API_URL =
         "https://generativelanguage.googleapis.com" +
@@ -17,87 +16,45 @@ public class GeminiClient : MonoBehaviour
         System.Action<string> onSuccess,
         System.Action<string> onError)
     {
-        string prompt = BuildPrompt(partName);
-        string jsonBody = BuildRequestBody(prompt);
+        string prompt =
+            $"Explain the {partName} of the human brain " +
+            "in 3 simple sentences for a medical student. " +
+            "Include location, function, and one fact.";
 
-        using (UnityWebRequest request = new UnityWebRequest(
-            API_URL + apiKey, "POST"))
-        {
-            byte[] bodyRaw =
-                System.Text.Encoding.UTF8.GetBytes(jsonBody);
-
-            request.uploadHandler =
-                new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler =
-                new DownloadHandlerBuffer();
-            request.SetRequestHeader(
-                "Content-Type", "application/json");
-
-            yield return request.SendWebRequest();
-
-            if (request.result ==
-                UnityWebRequest.Result.Success)
-            {
-                string response =
-                    request.downloadHandler.text;
-                string extracted =
-                    ExtractTextFromResponse(response);
-                onSuccess(extracted);
-            }
-            else
-            {
-                onError("Could not load explanation. " +
-                       "Check your connection.");
-            }
-        }
-    }
-
-    private string BuildPrompt(string partName)
-    {
-        return $"Explain the {partName} of the human brain " +
-               "in exactly 3 simple sentences. " +
-               "Write for a medical student. " +
-               "Include its location, main function, " +
-               "and one interesting fact. " +
-               "Be concise and clear.";
-    }
-
-    private string BuildRequestBody(string prompt)
-    {
-        // Escape special characters
         prompt = prompt.Replace("\"", "\\\"")
                        .Replace("\n", "\\n");
 
-        return "{\"contents\":[{\"parts\":" +
-               "[{\"text\":\"" + prompt + "\"}]}]}";
-    }
+        string body =
+            "{\"contents\":[{\"parts\":" +
+            "[{\"text\":\"" + prompt + "\"}]}]}";
 
-    private string ExtractTextFromResponse(string json)
-    {
-        try
+        using (UnityWebRequest req =
+            new UnityWebRequest(API_URL + apiKey, "POST"))
         {
-            // Find the text field in the JSON response
-            string searchKey = "\"text\": \"";
-            int startIndex = json.IndexOf(searchKey);
+            req.uploadHandler = new UploadHandlerRaw(
+                System.Text.Encoding.UTF8.GetBytes(body));
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader(
+                "Content-Type", "application/json");
 
-            if (startIndex == -1)
-                return "Could not parse response.";
+            yield return req.SendWebRequest();
 
-            startIndex += searchKey.Length;
-            int endIndex = json.IndexOf("\"", startIndex);
-
-            if (endIndex == -1)
-                return "Could not parse response.";
-
-            string extracted = json.Substring(
-                startIndex, endIndex - startIndex);
-
-            // Unescape newlines
-            return extracted.Replace("\\n", "\n");
-        }
-        catch
-        {
-            return "Error reading response.";
+            if (req.result ==
+                UnityWebRequest.Result.Success)
+            {
+                string json = req.downloadHandler.text;
+                string key = "\"text\": \"";
+                int start = json.IndexOf(key) + key.Length;
+                int end = json.IndexOf("\"", start);
+                string result = json.Substring(
+                    start, end - start)
+                    .Replace("\\n", "\n");
+                onSuccess(result);
+            }
+            else
+            {
+                onError("Connection error. Try again.");
+            }
         }
     }
 }

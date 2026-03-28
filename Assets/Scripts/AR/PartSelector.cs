@@ -2,15 +2,10 @@ using UnityEngine;
 
 public class PartSelector : MonoBehaviour
 {
-    [Header("References")]
     public InfoPanel infoPanel;
     public GeminiClient geminiClient;
-
-    [Header("Part Name Override")]
-    [Tooltip("Leave empty to use GameObject name")]
     public string customPartName = "";
 
-    [Header("Highlight")]
     public Color highlightColor = Color.yellow;
     private Color originalColor;
     private Renderer partRenderer;
@@ -24,20 +19,11 @@ public class PartSelector : MonoBehaviour
                 partRenderer.material.color;
     }
 
-    void OnMouseDown()
-    {
-        HandleTap();
-    }
-
-    // Called from touch raycast
     public void HandleTap()
     {
-        // Deselect previous
-        if (currentlySelected != null &&
-            currentlySelected != this)
-        {
+        if (currentlySelected != null
+            && currentlySelected != this)
             currentlySelected.Deselect();
-        }
 
         Select();
         RequestExplanation();
@@ -70,13 +56,10 @@ public class PartSelector : MonoBehaviour
         StartCoroutine(
             geminiClient.GetExplanation(
                 partName,
-                (explanation) => {
-                    infoPanel.UpdateDescription(
-                        explanation);
-                },
-                (error) => {
-                    infoPanel.UpdateDescription(error);
-                }
+                desc => infoPanel
+                    .UpdateDescription(desc),
+                err => infoPanel
+                    .UpdateDescription(err)
             )
         );
     }
