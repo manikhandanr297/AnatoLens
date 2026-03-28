@@ -37,7 +37,7 @@ public class TouchHandler : MonoBehaviour
         {
             PartSelector part =
                 hit.collider
-                   .GetComponent<PartSelector>();
+                .GetComponent<PartSelector>();
             if (part != null)
                 part.HandleTap();
         }

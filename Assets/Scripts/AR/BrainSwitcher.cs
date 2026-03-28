@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 
 public class BrainSwitcher : MonoBehaviour
@@ -10,6 +9,10 @@ public class BrainSwitcher : MonoBehaviour
 
     [Header("UI")]
     public TMP_Text switchButtonText;
+
+    [Header("Labels")]
+    public string surfaceLabel = "Cross Section";
+    public string crossSectionLabel = "Surface View";
 
     private bool showingSurface = true;
 
@@ -29,18 +32,23 @@ public class BrainSwitcher : MonoBehaviour
     void ShowSurface()
     {
         showingSurface = true;
-        brainSurface.SetActive(true);
-        brainCrossSection.SetActive(false);
+        if (brainSurface != null)
+            brainSurface.SetActive(true);
+        if (brainCrossSection != null)
+            brainCrossSection.SetActive(false);
         if (switchButtonText != null)
-            switchButtonText.text = "Cross Section";
+            switchButtonText.text = surfaceLabel;
     }
 
     void ShowCrossSection()
     {
         showingSurface = false;
-        brainSurface.SetActive(false);
-        brainCrossSection.SetActive(true);
+        if (brainSurface != null)
+            brainSurface.SetActive(false);
+        if (brainCrossSection != null)
+            brainCrossSection.SetActive(true);
         if (switchButtonText != null)
-            switchButtonText.text = "Surface View";
+            switchButtonText.text =
+                crossSectionLabel;
     }
 }

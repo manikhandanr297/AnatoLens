@@ -6,13 +6,13 @@ public class GeminiClient : MonoBehaviour
 {
     [Header("API Config")]
     [SerializeField]
-    private string apiKey = "AIzaSyB1DP6HBtd8bIgwR_7b3upgAOFQAoybOp0";
+    public string apiKey = "AIzaSyB1DP6HBtd8bIgwR_7b3upgAOFQAoybOp0";
 
     private const string API_URL =
         "https://generativelanguage.googleapis.com" +
-        "/v1beta/models/gemini-2.5-flash:generateContent?key=";
+        "/v1beta/models/gemini-2.5-flash" +
+        ":generateContent?key=";
 
-    [Header("Rate Limiting")]
     private float lastCallTime = -60f;
     private float cooldownSeconds = 15f;
 
@@ -21,14 +21,13 @@ public class GeminiClient : MonoBehaviour
         System.Action<string> onSuccess,
         System.Action<string> onError)
     {
-        // Cooldown check
-        float timeSinceLast = Time.time - lastCallTime;
+        float timeSinceLast =
+            Time.time - lastCallTime;
         if (timeSinceLast < cooldownSeconds)
         {
-            int waitTime = Mathf.CeilToInt(
+            int wait = Mathf.CeilToInt(
                 cooldownSeconds - timeSinceLast);
-            onError("Please wait " + waitTime +
-                    "s before tapping again.");
+            onError("Wait " + wait + "s before tapping again.");
             yield break;
         }
 
@@ -38,15 +37,14 @@ public class GeminiClient : MonoBehaviour
         string jsonBody = BuildRequestBody(prompt);
 
         Debug.Log("Calling Gemini for: " + partName);
-        Debug.Log("URL: " + API_URL +
-                  apiKey.Substring(0, 5) + "...");
 
         using (UnityWebRequest req =
-            new UnityWebRequest(API_URL + apiKey, "POST"))
+            new UnityWebRequest(
+                API_URL + apiKey, "POST"))
         {
             byte[] bodyRaw =
-                System.Text.Encoding.UTF8.GetBytes(jsonBody);
-
+                System.Text.Encoding.UTF8
+                .GetBytes(jsonBody);
             req.uploadHandler =
                 new UploadHandlerRaw(bodyRaw);
             req.downloadHandler =
@@ -59,38 +57,70 @@ public class GeminiClient : MonoBehaviour
             if (req.result ==
                 UnityWebRequest.Result.Success)
             {
-                string json = req.downloadHandler.text;
+                string json =
+                    req.downloadHandler.text;
                 Debug.Log("Gemini SUCCESS: " +
                     json.Substring(0,
-                        Mathf.Min(200, json.Length)));
+                    Mathf.Min(200, json.Length)));
                 string result = ExtractText(json);
                 onSuccess(result);
             }
             else
             {
-                string errorBody =
-                    req.downloadHandler.text;
                 long code = req.responseCode;
-                Debug.LogError("=== GEMINI ERROR ===");
-                Debug.LogError("Response Code: " + code);
-                Debug.LogError("Error: " + req.error);
-                Debug.LogError("Body: " + errorBody);
-
+                string body =
+                    req.downloadHandler.text;
+                Debug.LogError(
+                    "GEMINI ERROR " + code +
+                    ": " + body);
                 if (code == 429)
-                {
-                    onError("Rate limit hit. " +
-                            "Wait 60s and try again.");
-                }
+                    onError(
+                        "Rate limit. Wait 60s.");
                 else if (code == 403)
-                {
-                    onError("API key invalid " +
-                            "or not authorized.");
-                }
+                    onError("API key invalid.");
                 else
-                {
-                    onError("Error " + code +
-                            ": check Unity console.");
-                }
+                    onError(
+                        "Error " + code +
+                        ". Check console.");
+            }
+        }
+    }
+
+    public IEnumerator SendChat(
+        string fullPrompt,
+        System.Action<string> onSuccess,
+        System.Action<string> onError)
+    {
+        string jsonBody =
+            BuildRequestBody(fullPrompt);
+
+        using (UnityWebRequest req =
+            new UnityWebRequest(
+                API_URL + apiKey, "POST"))
+        {
+            byte[] bodyRaw =
+                System.Text.Encoding.UTF8
+                .GetBytes(jsonBody);
+            req.uploadHandler =
+                new UploadHandlerRaw(bodyRaw);
+            req.downloadHandler =
+                new DownloadHandlerBuffer();
+            req.SetRequestHeader(
+                "Content-Type", "application/json");
+
+            yield return req.SendWebRequest();
+
+            if (req.result ==
+                UnityWebRequest.Result.Success)
+            {
+                string result = ExtractText(
+                    req.downloadHandler.text);
+                onSuccess(result);
+            }
+            else
+            {
+                onError("Could not connect. " +
+                    "Error: " + req.responseCode);
             }
         }
     }
@@ -107,19 +137,19 @@ public class GeminiClient : MonoBehaviour
                "Be concise and clear.";
     }
 
-    private string BuildRequestBody(string prompt)
+    public string BuildRequestBody(string prompt)
     {
         prompt = prompt
             .Replace("\\", "\\\\")
             .Replace("\"", "\\\"")
             .Replace("\n", "\\n")
             .Replace("\r", "\\r");
-
         return "{\"contents\":[{\"parts\":" +
-               "[{\"text\":\"" + prompt + "\"}]}]}";
+               "[{\"text\":\"" +
+               prompt + "\"}]}]}";
     }
 
-    private string ExtractText(string json)
+    public string ExtractText(string json)
     {
         try
         {
@@ -128,19 +158,14 @@ public class GeminiClient : MonoBehaviour
             if (start == -1)
             {
                 Debug.LogError(
-                    "text key not found in: " + json);
+                    "text key not found: " + json);
                 return "Could not parse response.";
             }
-
             start += key.Length;
             int end = json.IndexOf("\"", start);
             if (end == -1)
                 return "Could not parse response.";
-
-            string result = json.Substring(
-                start, end - start);
-
-            return result
+            return json.Substring(start, end - start)
                 .Replace("\\n", "\n")
                 .Replace("\\\"", "\"")
                 .Replace("\\'", "'");

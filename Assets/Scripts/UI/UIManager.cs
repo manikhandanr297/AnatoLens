@@ -4,60 +4,49 @@ using TMPro;
 
 public class UIManager : MonoBehaviour
 {
-    [Header("Panel")]
+    [Header("Info Panel")]
     public GameObject panel;
     public Image panelBackground;
-
-    [Header("Text")]
     public TMP_Text organNameText;
     public TMP_Text shortFactText;
     public TMP_Text descriptionText;
-
-    [Header("Buttons")]
     public Button closeButton;
-    public Button listenButton;
+    public GameObject loadingIndicator;
 
-    [Header("Loading")]
-    public GameObject loadingSpinner;
-
-    private void Start()
+    void Start()
     {
         StylePanel();
-        panel.SetActive(false);
+        if (panel != null)
+            panel.SetActive(false);
+        if (loadingIndicator != null)
+            loadingIndicator.SetActive(false);
     }
 
     void StylePanel()
     {
-        // Panel background - dark semi transparent
         if (panelBackground != null)
             panelBackground.color =
-                new Color(0.05f, 0.05f, 0.15f, 0.92f);
-
-        // Organ name - large white bold
+                new Color(0.05f, 0.05f, 0.15f, 0.93f);
         if (organNameText != null)
         {
             organNameText.color = Color.white;
-            organNameText.fontSize = 26;
+            organNameText.fontSize = 24;
             organNameText.fontStyle =
                 FontStyles.Bold;
         }
-
-        // Short fact - yellow subtitle
         if (shortFactText != null)
         {
             shortFactText.color =
-                new Color(1f, 0.85f, 0.2f);
-            shortFactText.fontSize = 15;
+                new Color(1f, 0.85f, 0.2f, 1f);
+            shortFactText.fontSize = 14;
             shortFactText.fontStyle =
                 FontStyles.Italic;
         }
-
-        // Description - light grey readable
         if (descriptionText != null)
         {
             descriptionText.color =
-                new Color(0.85f, 0.85f, 0.85f);
-            descriptionText.fontSize = 14;
+                new Color(0.85f, 0.85f, 0.85f, 1f);
+            descriptionText.fontSize = 13;
         }
     }
 
@@ -67,26 +56,32 @@ public class UIManager : MonoBehaviour
         string description,
         bool isLoading = false)
     {
-        organNameText.text = organName;
-        shortFactText.text = shortFact;
-        descriptionText.text = isLoading ?
-            "Loading explanation..." : description;
-
-        if (loadingSpinner != null)
-            loadingSpinner.SetActive(isLoading);
-
-        panel.SetActive(true);
+        if (organNameText != null)
+            organNameText.text = organName;
+        if (shortFactText != null)
+            shortFactText.text = shortFact;
+        if (descriptionText != null)
+            descriptionText.text = isLoading
+                ? "Loading explanation..."
+                : description;
+        if (loadingIndicator != null)
+            loadingIndicator.SetActive(isLoading);
+        if (panel != null)
+            panel.SetActive(true);
     }
 
-    public void UpdateDescription(string description)
+    public void UpdateDescription(
+        string description)
     {
-        descriptionText.text = description;
-        if (loadingSpinner != null)
-            loadingSpinner.SetActive(false);
+        if (descriptionText != null)
+            descriptionText.text = description;
+        if (loadingIndicator != null)
+            loadingIndicator.SetActive(false);
     }
 
     public void HidePanel()
     {
-        panel.SetActive(false);
+        if (panel != null)
+            panel.SetActive(false);
     }
 }

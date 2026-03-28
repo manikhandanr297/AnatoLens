@@ -56,25 +56,40 @@ public class PartSelector : MonoBehaviour
 
         if (OrganDatabaseManager.Instance != null)
         {
-            displayName = OrganDatabaseManager
-                .Instance
+            displayName =
+                OrganDatabaseManager.Instance
                 .GetDisplayName(organId, meshName);
-            shortFact = OrganDatabaseManager
-                .Instance
+            shortFact =
+                OrganDatabaseManager.Instance
                 .GetShortFact(organId, meshName);
         }
 
-        uiManager.ShowPanel(
-            displayName, shortFact, "", true);
+        if (uiManager != null)
+            uiManager.ShowPanel(
+                displayName, shortFact, "", true);
 
-        StartCoroutine(
-            geminiClient.GetExplanation(
-                displayName,
-                desc => uiManager
-                    .UpdateDescription(desc),
-                err => uiManager
-                    .UpdateDescription(err)
-            )
-        );
+        AIChat chat =
+            FindObjectOfType<AIChat>();
+        if (chat != null)
+            chat.SetOrganContext(displayName);
+
+        if (geminiClient != null)
+            StartCoroutine(
+                geminiClient.GetExplanation(
+                    displayName,
+                    desc =>
+                    {
+                        if (uiManager != null)
+                            uiManager
+                            .UpdateDescription(desc);
+                    },
+                    err =>
+                    {
+                        if (uiManager != null)
+                            uiManager
+                            .UpdateDescription(err);
+                    }
+                )
+            );
     }
 }
