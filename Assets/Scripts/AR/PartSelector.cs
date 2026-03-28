@@ -2,10 +2,14 @@ using UnityEngine;
 
 public class PartSelector : MonoBehaviour
 {
+    [Header("References")]
     public InfoPanel infoPanel;
     public GeminiClient geminiClient;
-    public string customPartName = "";
 
+    [Header("Organ Config")]
+    public string organId = "brain";
+
+    [Header("Highlight")]
     public Color highlightColor = Color.yellow;
     private Color originalColor;
     private Renderer partRenderer;
@@ -46,16 +50,35 @@ public class PartSelector : MonoBehaviour
 
     void RequestExplanation()
     {
-        string partName = string.IsNullOrEmpty(
-            customPartName)
-            ? gameObject.name
-            : customPartName;
+        // Get the mesh name from this GameObject
+        string meshName = gameObject.name;
 
-        infoPanel.ShowLoading(partName);
+        // Look up human-readable name from database
+        string displayName = meshName;
+        string shortFact = "";
 
+        if (OrganDatabaseManager.Instance != null)
+        {
+            displayName =
+                OrganDatabaseManager.Instance
+                .GetDisplayName(organId, meshName);
+            shortFact =
+                OrganDatabaseManager.Instance
+                .GetShortFact(organId, meshName);
+        }
+
+        // Show loading with display name
+        infoPanel.ShowLoading(displayName);
+
+        // Show short fact immediately while AI loads
+        if (!string.IsNullOrEmpty(shortFact))
+            infoPanel.UpdateDescription(
+                shortFact + "\n\nLoading full explanation...");
+
+        // Request AI explanation
         StartCoroutine(
             geminiClient.GetExplanation(
-                partName,
+                displayName,
                 desc => infoPanel
                     .UpdateDescription(desc),
                 err => infoPanel
