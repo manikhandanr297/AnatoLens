@@ -3,14 +3,15 @@ using UnityEngine;
 public class PartSelector : MonoBehaviour
 {
     [Header("References")]
-    public InfoPanel infoPanel;
+    public UIManager uiManager;
     public GeminiClient geminiClient;
 
     [Header("Organ Config")]
     public string organId = "brain";
 
     [Header("Highlight")]
-    public Color highlightColor = Color.yellow;
+    public Color highlightColor =
+        new Color(1f, 0.8f, 0f, 1f);
     private Color originalColor;
     private Renderer partRenderer;
     private static PartSelector currentlySelected;
@@ -28,7 +29,6 @@ public class PartSelector : MonoBehaviour
         if (currentlySelected != null
             && currentlySelected != this)
             currentlySelected.Deselect();
-
         Select();
         RequestExplanation();
     }
@@ -41,7 +41,7 @@ public class PartSelector : MonoBehaviour
                 highlightColor;
     }
 
-    void Deselect()
+    public void Deselect()
     {
         if (partRenderer != null)
             partRenderer.material.color =
@@ -50,38 +50,29 @@ public class PartSelector : MonoBehaviour
 
     void RequestExplanation()
     {
-        // Get the mesh name from this GameObject
         string meshName = gameObject.name;
-
-        // Look up human-readable name from database
         string displayName = meshName;
         string shortFact = "";
 
         if (OrganDatabaseManager.Instance != null)
         {
-            displayName =
-                OrganDatabaseManager.Instance
+            displayName = OrganDatabaseManager
+                .Instance
                 .GetDisplayName(organId, meshName);
-            shortFact =
-                OrganDatabaseManager.Instance
+            shortFact = OrganDatabaseManager
+                .Instance
                 .GetShortFact(organId, meshName);
         }
 
-        // Show loading with display name
-        infoPanel.ShowLoading(displayName);
+        uiManager.ShowPanel(
+            displayName, shortFact, "", true);
 
-        // Show short fact immediately while AI loads
-        if (!string.IsNullOrEmpty(shortFact))
-            infoPanel.UpdateDescription(
-                shortFact + "\n\nLoading full explanation...");
-
-        // Request AI explanation
         StartCoroutine(
             geminiClient.GetExplanation(
                 displayName,
-                desc => infoPanel
+                desc => uiManager
                     .UpdateDescription(desc),
-                err => infoPanel
+                err => uiManager
                     .UpdateDescription(err)
             )
         );

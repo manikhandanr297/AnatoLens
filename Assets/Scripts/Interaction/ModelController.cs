@@ -3,9 +3,9 @@ using UnityEngine;
 public class ModelController : MonoBehaviour
 {
     public float rotationSpeed = 0.3f;
-    public float zoomSpeed = 0.01f;
-    public float minScale = 0.03f;
-    public float maxScale = 0.5f;
+    public float zoomSpeed = 0.002f;  // was 0.01f
+    public float minScale = 0.05f;
+    public float maxScale = 0.3f;
 
     void Update()
     {

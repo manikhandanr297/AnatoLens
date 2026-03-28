@@ -8,8 +8,8 @@ public class GeminiClient : MonoBehaviour
     private string apiKey = "AIzaSyDaAliL5I50g6iCxsqvPGSF_e7awRrvDoA";
 
     private const string API_URL =
-        "https://generativelanguage.googleapis.com" +
-        "/v1beta/models/gemini-2.0-flash:generateContent?key=";
+         "https://generativelanguage.googleapis.com" +
+    "/v1beta/models/gemini-1.5-flash:generateContent?key=";
 
     public IEnumerator GetExplanation(
         string partName,
@@ -53,7 +53,11 @@ public class GeminiClient : MonoBehaviour
             }
             else
             {
-                onError("Connection error. Try again.");
+                Debug.LogError("Gemini Error: " +
+                    req.responseCode + " - " +
+                    req.downloadHandler.text);
+                onError("AI unavailable. Error: " +
+                    req.responseCode);
             }
         }
     }
