@@ -5,91 +5,100 @@ public class PartSelector : MonoBehaviour
     [Header("References")]
     public UIManager uiManager;
     public GeminiClient geminiClient;
+    public ChatManager chatManager;
 
-    [Header("Organ Config")]
+    [Header("Config")]
     public string organId = "brain";
+    public string customPartName = "";
 
     [Header("Highlight")]
     public Color highlightColor =
-        new Color(1f, 0.8f, 0f, 1f);
-    private Color originalColor;
-    private Renderer partRenderer;
-    private static PartSelector currentlySelected;
+        new Color(1f, 0.85f, 0.1f);
+
+    private Renderer[] renderers;
+    private Color[] originalColors;
+    public static PartSelector CurrentSelected;
 
     void Start()
     {
-        partRenderer = GetComponent<Renderer>();
-        if (partRenderer != null)
-            originalColor =
-                partRenderer.material.color;
+        renderers =
+            GetComponentsInChildren<Renderer>();
+        originalColors =
+            new Color[renderers.Length];
+        for (int i = 0; i < renderers.Length; i++)
+            if (renderers[i] != null &&
+                renderers[i].material != null)
+                originalColors[i] =
+                    renderers[i].material.color;
     }
 
     public void HandleTap()
     {
-        if (currentlySelected != null
-            && currentlySelected != this)
-            currentlySelected.Deselect();
+        if (CurrentSelected != null &&
+            CurrentSelected != this)
+            CurrentSelected.Deselect();
         Select();
-        RequestExplanation();
+        ShowInfo();
     }
 
-    void Select()
+    public void Select()
     {
-        currentlySelected = this;
-        if (partRenderer != null)
-            partRenderer.material.color =
-                highlightColor;
+        CurrentSelected = this;
+        foreach (var r in renderers)
+            if (r != null && r.material != null)
+                r.material.color = highlightColor;
     }
 
     public void Deselect()
     {
-        if (partRenderer != null)
-            partRenderer.material.color =
-                originalColor;
+        for (int i = 0;
+             i < renderers.Length; i++)
+            if (renderers[i] != null &&
+                renderers[i].material != null)
+                renderers[i].material.color =
+                    originalColors[i];
     }
 
-    void RequestExplanation()
+    string GetPartName()
     {
-        string meshName = gameObject.name;
-        string displayName = meshName;
-        string shortFact = "";
+        string mesh = string.IsNullOrEmpty(
+            customPartName)
+            ? gameObject.name
+            : customPartName;
 
         if (OrganDatabaseManager.Instance != null)
-        {
-            displayName =
-                OrganDatabaseManager.Instance
-                .GetDisplayName(organId, meshName);
-            shortFact =
-                OrganDatabaseManager.Instance
-                .GetShortFact(organId, meshName);
-        }
+            return OrganDatabaseManager.Instance
+                .GetDisplayName(organId, mesh);
+        return mesh;
+    }
+
+    void ShowInfo()
+    {
+        string name = GetPartName();
+        string fact = "";
+
+        if (OrganDatabaseManager.Instance != null)
+            fact = OrganDatabaseManager.Instance
+                .GetShortFact(
+                    organId, gameObject.name);
 
         if (uiManager != null)
             uiManager.ShowPanel(
-                displayName, shortFact, "", true);
-
-        AIChat chat =
-            FindObjectOfType<AIChat>();
-        if (chat != null)
-            chat.SetOrganContext(displayName);
+                name, fact, "", true);
 
         if (geminiClient != null)
             StartCoroutine(
                 geminiClient.GetExplanation(
-                    displayName,
+                    name,
                     desc =>
                     {
-                        if (uiManager != null)
-                            uiManager
+                        uiManager?
                             .UpdateDescription(desc);
+                        chatManager?
+                            .SetContext(name, desc);
                     },
                     err =>
-                    {
-                        if (uiManager != null)
-                            uiManager
-                            .UpdateDescription(err);
-                    }
-                )
-            );
+                        uiManager?
+                        .UpdateDescription(err)));
     }
 }

@@ -3,43 +3,49 @@ using UnityEngine;
 public class TouchHandler : MonoBehaviour
 {
     public ModelController modelController;
-    private bool isTwoFingerGesture = false;
+    private bool twoFinger = false;
+    private Vector2 touchStart;
+    private float tapTimer;
 
     void Update()
     {
         if (Input.touchCount == 0)
         {
-            isTwoFingerGesture = false;
+            twoFinger = false;
             return;
         }
         if (Input.touchCount >= 2)
         {
-            isTwoFingerGesture = true;
+            twoFinger = true;
             return;
         }
-        if (Input.touchCount == 1)
+        Touch t = Input.GetTouch(0);
+        if (t.phase == TouchPhase.Began)
         {
-            Touch touch = Input.GetTouch(0);
-            if (touch.phase == TouchPhase.Began
-                && !isTwoFingerGesture)
-            {
-                TrySelectPart(touch.position);
-            }
+            touchStart = t.position;
+            tapTimer = 0f;
         }
+        if (t.phase == TouchPhase.Moved ||
+            t.phase == TouchPhase.Stationary)
+            tapTimer += Time.deltaTime;
+
+        if (t.phase == TouchPhase.Ended &&
+            !twoFinger && tapTimer < 0.25f &&
+            Vector2.Distance(
+                t.position, touchStart) < 25f)
+            TrySelect(t.position);
     }
 
-    void TrySelectPart(Vector2 screenPos)
+    void TrySelect(Vector2 pos)
     {
         Ray ray = Camera.main
-            .ScreenPointToRay(screenPos);
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, 100f))
+            .ScreenPointToRay(pos);
+        if (Physics.Raycast(
+            ray, out RaycastHit hit, 100f))
         {
-            PartSelector part =
-                hit.collider
+            PartSelector ps = hit.collider
                 .GetComponent<PartSelector>();
-            if (part != null)
-                part.HandleTap();
+            if (ps != null) ps.HandleTap();
         }
     }
 }

@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
@@ -28,87 +27,73 @@ public class OrganDatabase
 public class OrganDatabaseManager : MonoBehaviour
 {
     public static OrganDatabaseManager Instance;
-    private OrganDatabase database;
+    private OrganDatabase db;
 
     void Awake()
     {
-        // Singleton — one instance across all scenes
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            LoadDatabase();
+            Load();
         }
-        else
-        {
-            Destroy(gameObject);
-        }
+        else Destroy(gameObject);
     }
 
-    void LoadDatabase()
+    void Load()
     {
         string path = Path.Combine(
             Application.streamingAssetsPath,
             "organs.json");
-
         if (File.Exists(path))
-        {
-            string json = File.ReadAllText(path);
-            database = JsonUtility
-                .FromJson<OrganDatabase>(json);
-            Debug.Log("OrganDatabase loaded: " +
-                database.organs.Count + " organs");
-        }
+            db = JsonUtility.FromJson
+                <OrganDatabase>(
+                    File.ReadAllText(path));
         else
-        {
             Debug.LogError(
-                "organs.json not found at: " + path);
-        }
+                "organs.json not found: " + path);
     }
 
-    // Get display name from mesh name
     public string GetDisplayName(
         string organId, string meshName)
     {
-        OrganData organ = GetOrgan(organId);
-        if (organ == null) return meshName;
-
-        PartData part = organ.parts.Find(
-            p => p.meshName == meshName);
-
-        return part != null ? part.displayName : meshName;
+        var part = FindPart(organId, meshName);
+        return part != null
+            ? part.displayName : meshName;
     }
 
-    // Get short fact for quick display
     public string GetShortFact(
         string organId, string meshName)
     {
-        OrganData organ = GetOrgan(organId);
-        if (organ == null) return "";
-
-        PartData part = organ.parts.Find(
-            p => p.meshName == meshName);
-
+        var part = FindPart(organId, meshName);
         return part != null ? part.shortFact : "";
     }
 
-    // Get full organ data
-    public OrganData GetOrgan(string organId)
+    public List<string> GetPartNames(
+        string organId)
     {
-        if (database == null) return null;
-        return database.organs.Find(
-            o => o.id == organId);
+        var organ = FindOrgan(organId);
+        if (organ == null)
+            return new List<string>();
+        var names = new List<string>();
+        foreach (var p in organ.parts)
+            names.Add(p.meshName);
+        return names;
     }
 
-    // Get all part names for an organ
-    public List<string> GetPartNames(string organId)
+    PartData FindPart(
+        string organId, string meshName)
     {
-        OrganData organ = GetOrgan(organId);
-        if (organ == null) return new List<string>();
+        var organ = FindOrgan(organId);
+        if (organ == null) return null;
+        return organ.parts.Find(
+            p => p.meshName == meshName);
+    }
 
-        List<string> names = new List<string>();
-        foreach (PartData part in organ.parts)
-            names.Add(part.meshName);
-        return names;
+    OrganData FindOrgan(string organId)
+    {
+        if (db == null) return null;
+        return db.organs.Find(
+            o => o.id == organId);
     }
 }

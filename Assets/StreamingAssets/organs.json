@@ -5,106 +5,64 @@
       "displayName": "Human Brain",
       "parts": [
         {
-          "meshName": "Cerebrum",
+          "meshName": "Object_2",
           "displayName": "Cerebrum",
           "shortFact": "Largest part of the brain"
         },
         {
-          "meshName": "Cerebellum",
+          "meshName": "Object_3",
           "displayName": "Cerebellum",
           "shortFact": "Controls balance and coordination"
         },
         {
-          "meshName": "Brainstem",
+          "meshName": "Object_4",
           "displayName": "Brainstem",
           "shortFact": "Controls breathing and heart rate"
         },
         {
-          "meshName": "Hippocampus",
+          "meshName": "Object_5",
           "displayName": "Hippocampus",
           "shortFact": "Stores long-term memories"
         },
         {
-          "meshName": "Thalamus",
+          "meshName": "Object_6",
           "displayName": "Thalamus",
           "shortFact": "Relay station for sensory signals"
         },
         {
-          "meshName": "CorpusCallosum",
+          "meshName": "Object_7",
           "displayName": "Corpus Callosum",
           "shortFact": "Connects left and right hemispheres"
         },
         {
-          "meshName": "Amygdala",
+          "meshName": "Object_8",
           "displayName": "Amygdala",
           "shortFact": "Processes emotions and fear"
         },
         {
-          "meshName": "PrefrontalCortex",
+          "meshName": "Object_9",
           "displayName": "Prefrontal Cortex",
           "shortFact": "Controls decision making"
-        }
-      ]
-    },
-    {
-      "id": "heart",
-      "displayName": "Human Heart",
-      "parts": [
-        {
-          "meshName": "LeftVentricle",
-          "displayName": "Left Ventricle",
-          "shortFact": "Pumps blood to the entire body"
         },
         {
-          "meshName": "RightVentricle",
-          "displayName": "Right Ventricle",
-          "shortFact": "Pumps blood to the lungs"
+          "meshName": "Object_10",
+          "displayName": "Temporal Lobe",
+          "shortFact": "Processes sound and language"
         },
         {
-          "meshName": "LeftAtrium",
-          "displayName": "Left Atrium",
-          "shortFact": "Receives oxygenated blood from lungs"
+          "meshName": "Object_11",
+          "displayName": "Frontal Lobe",
+          "shortFact": "Controls planning and movement"
         },
         {
-          "meshName": "RightAtrium",
-          "displayName": "Right Atrium",
-          "shortFact": "Receives deoxygenated blood from body"
+          "meshName": "Object_12",
+          "displayName": "Parietal Lobe",
+          "shortFact": "Processes touch and spatial awareness"
         },
         {
-          "meshName": "Aorta",
-          "displayName": "Aorta",
-          "shortFact": "Largest artery in the body"
-        }
-      ]
-    },
-    {
-      "id": "lungs",
-      "displayName": "Human Lungs",
-      "parts": [
-        {
-          "meshName": "LeftLung",
-          "displayName": "Left Lung",
-          "shortFact": "Slightly smaller to make room for heart"
-        },
-        {
-          "meshName": "RightLung",
-          "displayName": "Right Lung",
-          "shortFact": "Has three lobes, largest lung"
-        },
-        {
-          "meshName": "Trachea",
-          "displayName": "Trachea",
-          "shortFact": "Airway connecting throat to lungs"
-        },
-        {
-          "meshName": "Bronchi",
-          "displayName": "Bronchi",
-          "shortFact": "Branches that carry air into lungs"
-        },
-        {
-          "meshName": "Alveoli",
-          "displayName": "Alveoli",
-          "shortFact": "Tiny sacs where gas exchange happens"
+          "meshName": "Object_13",
+          "displayName": "Occipital Lobe",
+          "shortFact": "Processes visual information"
         }
       ]
     }
